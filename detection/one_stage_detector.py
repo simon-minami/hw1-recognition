@@ -11,7 +11,7 @@ from torch.utils.data._utils.collate import default_collate
 from torchvision.ops import sigmoid_focal_loss
 from torchvision import models
 from torchvision.models import feature_extraction
-
+from torchvision.models.regnet import RegNet_X_400MF_Weights
 
 class DetectorBackboneWithFPN(nn.Module):
     """
@@ -34,7 +34,7 @@ class DetectorBackboneWithFPN(nn.Module):
         self.out_channels = out_channels
 
         # Initialize with ImageNet pre-trained weights.
-        _cnn = models.regnet_x_400mf(pretrained=True)
+        _cnn = models.regnet_x_400mf(weights=RegNet_X_400MF_Weights.IMAGENET1K_V1)
 
         # Torchvision models only return features from the last level. Detector
         # backbones (with FPN) require intermediate features of different scales.
