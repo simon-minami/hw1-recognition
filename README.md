@@ -5,8 +5,7 @@ We strongly suggest using conda (or miniconda) for package management. We wrote 
 If you follow our AWS tutorial to setup the EC2 instance, you can then use the following commands to setup the hw1's conda environment.
 
 ```shell
-conda create -n cmu16824hw1 python=3.7
+conda create -n cmu16824hw1 python=3.10
 conda activate cmu16824hw1
 pip install -r requirements.txt
-pip install opencv-python
 ```
