@@ -185,7 +185,7 @@ def main(args):
             detector,
             small_val_loader,
             val_dataset.idx_to_class,
-            score_thresh=0.7,
+            score_thresh=0.4,
             nms_thresh=0.5,
             device=DEVICE,
             dtype=torch.float32,
