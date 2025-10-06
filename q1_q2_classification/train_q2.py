@@ -74,7 +74,7 @@ if __name__ == "__main__":
         step_size=a.step_size,
         gamma=a.gamma
     )
-    experiment_name = f'{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}_ss{a.step_size}_g{a.gamma}_{datetime.now().strftime('%Y%m%d-%H%M%S')}'
+    experiment_name = f"{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}_ss{a.step_size}_g{a.gamma}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
 
     ##################################################################
     #                          END OF YOUR CODE                      #

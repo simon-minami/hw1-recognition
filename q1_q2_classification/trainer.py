@@ -71,8 +71,11 @@ def train(args, model, optimizer, scheduler=None, exp_name=None, model_name='mod
                 
                 # Log gradients
                 for tag, value in model.named_parameters():
+                    if tag == 'layer1.1.conv1.weight' or tag == 'layer4.0.bn2.bias':
+                        writer.add_histogram(tag + "/grad", value.grad.cpu().numpy(), cnt)
                     if value.grad is not None:
                         writer.add_histogram(tag + "/grad", value.grad.cpu().numpy(), cnt)
+                    
 
             optimizer.step()
             
