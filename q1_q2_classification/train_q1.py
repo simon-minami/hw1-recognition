@@ -21,8 +21,10 @@ if __name__ == "__main__":
     ##################################################################
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--epochs', default=5, type=int, help='epochs')
-    parser.add_argument('-lr', '--learing_rate', default=0.01, type=float, help='learning rate')
+    parser.add_argument('-lr', '--learning_rate', default=0.01, type=float, help='learning rate')
     parser.add_argument('-b', '--batch_size', default=16, type=int, help='batch size')
+    parser.add_argument('-g', '--gamma', default=1.0, type=float, help='gamma, (how much to reduce lr)')
+
     a = parser.parse_args()
 
     args = ARGS(
@@ -30,7 +32,7 @@ if __name__ == "__main__":
         inp_size=64,
         use_cuda=torch.cuda.is_available(),
         val_every=70,
-        lr=a.learing_rate,
+        lr=a.learning_rate,
         batch_size=a.batch_size,
         step_size=1,
         gamma=0.7
