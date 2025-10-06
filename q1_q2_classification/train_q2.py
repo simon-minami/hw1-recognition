@@ -8,6 +8,7 @@ import torchvision
 import torch.nn as nn
 import argparse
 import random
+from datetime import datetime
 
 
 class ResNet(nn.Module):
@@ -71,7 +72,7 @@ if __name__ == "__main__":
         step_size=1,
         gamma=a.gamma
     )
-    experiment_name = f'{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}'
+    experiment_name = f'{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}_{datetime.now().strftime('%Y%m%d-%H%M%S')}'
 
     ##################################################################
     #                          END OF YOUR CODE                      #
