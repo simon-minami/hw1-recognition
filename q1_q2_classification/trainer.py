@@ -24,7 +24,7 @@ def save_model(epoch, model_name, model):
 
 
 def train(args, model, optimizer, scheduler=None, exp_name=None, model_name='model'):
-    writer = SummaryWriter(log_dir=exp_name)
+    writer = SummaryWriter(log_dir=f'runs/{exp_name}')
     train_loader = utils.get_data_loader(
         'voc', train=True, batch_size=args.batch_size, split='trainval', inp_size=args.inp_size)
     test_loader = utils.get_data_loader(
