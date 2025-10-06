@@ -11,6 +11,6 @@ with torch.inference_mode():
     # for param in model.resnet.fc.parameters():
     #     print(param)
 
-    for tag, value in model.resnet.named_parameters():
-        if tag == 'layer1.1.conv1.weight' or tag == 'layer4.0.bn2.bias':
+    for tag, value in model.named_parameters():
+        if tag == 'resnet.layer1.1.conv1.weight' or tag == 'resnet.layer4.0.bn2.bias':
             print(tag)
