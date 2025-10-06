@@ -5,6 +5,7 @@ from simple_cnn import SimpleCNN
 from voc_dataset import VOCDataset
 import numpy as np
 import random
+import argparse
 
 if __name__ == "__main__":
     np.random.seed(0)
@@ -18,13 +19,19 @@ if __name__ == "__main__":
     # You should experiment and choose the correct hyperparameters
     # You should get a map of around 22 in 5 epochs
     ##################################################################
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-e', '--epochs', default=5, type=int, help='epochs')
+    parser.add_argument('-lr', '--learing_rate', defualt=0.01, type=float, help='learning rate')
+    parser.add_argument('-b', '--batch_size', default=16, type=int, help='batch size')
+    a = parser.parse_args()
+
     args = ARGS(
-        epochs=10,
+        epochs=a.epochs,
         inp_size=64,
-        use_cuda=False,
+        use_cuda=torch.cuda.is_available(),
         val_every=70,
-        lr=0.01,
-        batch_size=2,
+        lr=a.learing_rate,
+        batch_size=a.batch_size,
         step_size=1,
         gamma=0.7
     )
