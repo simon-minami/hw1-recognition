@@ -5,6 +5,7 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import utils
 from voc_dataset import VOCDataset
+from tqdm import tqdm
 
 
 def save_this_epoch(args, epoch):
@@ -22,8 +23,8 @@ def save_model(epoch, model_name, model):
     torch.save(model, filename)
 
 
-def train(args, model, optimizer, scheduler=None, model_name='model'):
-    writer = SummaryWriter()
+def train(args, model, optimizer, scheduler=None, exp_name=None, model_name='model'):
+    writer = SummaryWriter(log_dir=exp_name)
     train_loader = utils.get_data_loader(
         'voc', train=True, batch_size=args.batch_size, split='trainval', inp_size=args.inp_size)
     test_loader = utils.get_data_loader(
@@ -35,7 +36,7 @@ def train(args, model, optimizer, scheduler=None, model_name='model'):
 
     cnt = 0
 
-    for epoch in range(args.epochs):
+    for epoch in tqdm(range(args.epochs)):
         for batch_idx, (data, target, wgt) in enumerate(train_loader):
             data, target, wgt = data.to(args.device), target.to(args.device), wgt.to(args.device)
 
