@@ -54,6 +54,10 @@ def train(args, model, optimizer, scheduler=None, model_name='model'):
             #   - `output`: Computed loss, a single floating point number
             ##################################################################
             loss = 0
+            loss = torch.clamp(output, min=0) - target * output + torch.log1p(torch.exp(-torch.abs(output)))
+            loss *= wgt  # multiply by the difficult mask
+            # average over classes and batchsize
+            loss = torch.sum(loss) / (output.shape[0] * output.shape[1])
             ##################################################################
             #                          END OF YOUR CODE                      #
             ##################################################################
