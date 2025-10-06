@@ -19,8 +19,8 @@ class ResNet(nn.Module):
         ##################################################################
         # TODO: Define a FC layer here to process the features
         ##################################################################
-        for param in self.resnet.parameters():
-            param.requires_grad = False
+        # for param in self.resnet.parameters():
+        #     param.requires_grad = False
             # freeze all layers
         # replace last layer with right number of output classes
         self.resnet.fc =  nn.Linear(512, num_classes)
