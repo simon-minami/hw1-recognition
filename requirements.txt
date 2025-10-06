@@ -1,5 +1,5 @@
 matplotlib
-numpy
+numpy<2
 opencv-python
 Pillow==9.4.0
 scikit-learn
