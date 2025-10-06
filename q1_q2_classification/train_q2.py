@@ -72,7 +72,9 @@ if __name__ == "__main__":
         lr=a.learning_rate,
         batch_size=a.batch_size,
         step_size=a.step_size,
-        gamma=a.gamma
+        gamma=a.gamma,
+        save_at_end = True,
+        save_freq=5
     )
     experiment_name = f"{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}_ss{a.step_size}_g{a.gamma}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
 
