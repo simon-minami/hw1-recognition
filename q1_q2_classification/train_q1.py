@@ -42,7 +42,7 @@ if __name__ == "__main__":
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
-    experiment_name = f'{a.notes}_lr{a.learning_rate}_b{a.batch_size}'
+    experiment_name = f'{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}'
 
     print(args)
 
