@@ -68,7 +68,7 @@ if __name__ == "__main__":
         epochs=a.epochs,
         inp_size=224,
         use_cuda=torch.cuda.is_available(),
-        val_every=200,
+        val_every=100,
         lr=a.learning_rate,
         batch_size=a.batch_size,
         step_size=a.step_size,
