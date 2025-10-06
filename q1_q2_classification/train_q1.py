@@ -39,10 +39,11 @@ if __name__ == "__main__":
         step_size=1,
         gamma=a.gamma
     )
+    experiment_name = f'{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}'
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
-    experiment_name = f'{a.experiment_notes}_lr{a.learning_rate}_b{a.batch_size}'
+    
 
     print(args)
 
@@ -52,5 +53,5 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
     # trains model using your training code and reports test map
-    test_ap, test_map = trainer.train(args, model, optimizer, scheduler, exp_name)
+    test_ap, test_map = trainer.train(args, model, optimizer, scheduler, experiment_name)
     print('test map:', test_map)
