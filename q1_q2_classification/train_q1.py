@@ -25,6 +25,7 @@ if __name__ == "__main__":
     parser.add_argument('-lr', '--learning_rate', default=0.01, type=float, help='learning rate')
     parser.add_argument('-b', '--batch_size', default=16, type=int, help='batch size')
     parser.add_argument('-g', '--gamma', default=1.0, type=float, help='gamma, (how much to reduce lr)')
+    parser.add_argument('-s', '--step_size', default=1, type=int, help='for learning rate scheduling')
     parser.add_argument('-notes', '--experiment_notes', default=None, type=str, help='for tensorboard log dir')
 
 
