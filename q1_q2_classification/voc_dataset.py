@@ -103,10 +103,9 @@ class VOCDataset(Dataset):
         # in line 46 in simple_cnn.py
         ######################################################################
         return [
-            transforms.RandomResizedCrop(size=self.size, scale=(0.8, 1.0)),
             transforms.RandomHorizontalFlip(),
-            transforms.RandomRotation(15),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+            transforms.RandomRotation(5),
+            transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
         ]
         ######################################################################
         #                            END OF YOUR CODE                        #
