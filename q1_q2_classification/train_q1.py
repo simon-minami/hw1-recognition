@@ -35,7 +35,7 @@ if __name__ == "__main__":
         lr=a.learning_rate,
         batch_size=a.batch_size,
         step_size=1,
-        gamma=0.7
+        gamma=a.gamma
     )
     ##################################################################
     #                          END OF YOUR CODE                      #
