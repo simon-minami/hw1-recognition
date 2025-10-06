@@ -21,7 +21,7 @@ if __name__ == "__main__":
     ##################################################################
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--epochs', default=5, type=int, help='epochs')
-    parser.add_argument('-lr', '--learing_rate', defualt=0.01, type=float, help='learning rate')
+    parser.add_argument('-lr', '--learing_rate', default=0.01, type=float, help='learning rate')
     parser.add_argument('-b', '--batch_size', default=16, type=int, help='batch size')
     a = parser.parse_args()
 
