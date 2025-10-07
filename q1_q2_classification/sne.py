@@ -27,54 +27,60 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import numpy as np
 import matplotlib.pyplot as plt
-path = r"C:\Users\simon\Downloads\checkpoint-model-epoch40.pth"
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model = torch.load(path, map_location=device)
-model.eval()
-model.resnet.fc = nn.Identity()
-batch_size = 16
-test_loader = get_data_loader('voc', train=False, batch_size=batch_size, split='test', inp_size=224)
+import argparse
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path', type=str)
+    args = parser.parse_args()
 
-N = 0
-pca = PCA(n_components=50)
-tsne = TSNE(n_components=2, perplexity=30, n_iter=1000)
+    path = args.path
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = torch.load(path, map_location=device)
+    model.eval()
+    model.resnet.fc = nn.Identity()
+    batch_size = 16
+    test_loader = get_data_loader('voc', train=False, batch_size=batch_size, split='test', inp_size=224)
 
-features = []
-colors = []
-class_colors = plt.cm.tab20(np.linspace(0, 1, 20))[:, :3]  # shape (20,3), RGB only
+    N = 0
+    pca = PCA(n_components=50)
+    tsne = TSNE(n_components=2, perplexity=30, n_iter=1000)
 
-# process 1000 images
-with torch.inference_mode():
-    for batch_idx, (data, target, wgt) in enumerate(test_loader):
-        if N > 1000:
-            break
-        N += data.shape[0]
-        data = data.to(device)
-        output = model(data)  # should be b,512,1,1
-        output = output.view(-1, 512)
-        output = output.detach().cpu().numpy()
-        features.append(output)
+    features = []
+    colors = []
+    class_colors = plt.cm.tab20(np.linspace(0, 1, 20))[:, :3]  # shape (20,3), RGB only
 
-        # now we need colors
-        # target is b,20
-        # Use a categorical colormap (e.g., tab20)
-        target = target.detach().cpu().numpy()
-        # avoid division by zero
-        sums = target.sum(axis=1, keepdims=True)  # (b,1)
-        sums[sums == 0] = 1
-        # weighted average of colors
-        point_colors = (target @ class_colors) / sums   # (n,3)
-        colors.append(point_colors)
-features = np.vstack(features)
-colors = np.vstack(colors)
+    # process 1000 images
+    with torch.inference_mode():
+        for batch_idx, (data, target, wgt) in enumerate(test_loader):
+            if N > 1000:
+                break
+            N += data.shape[0]
+            data = data.to(device)
+            output = model(data)  # should be b,512,1,1
+            output = output.view(-1, 512)
+            output = output.detach().cpu().numpy()
+            features.append(output)
 
-# features should 1000,512
-features = pca.fit_transform(features)  #output should be 1000,50 now
-features = tsne.fit_transform(features)  #output should be 1000,2
+            # now we need colors
+            # target is b,20
+            # Use a categorical colormap (e.g., tab20)
+            target = target.detach().cpu().numpy()
+            # avoid division by zero
+            sums = target.sum(axis=1, keepdims=True)  # (b,1)
+            sums[sums == 0] = 1
+            # weighted average of colors
+            point_colors = (target @ class_colors) / sums   # (n,3)
+            colors.append(point_colors)
+    features = np.vstack(features)
+    colors = np.vstack(colors)
+
+    # features should 1000,512
+    features = pca.fit_transform(features)  #output should be 1000,50 now
+    features = tsne.fit_transform(features)  #output should be 1000,2
 
 
-plt.figure(figsize=(6,6))
-plt.title('t-SNE Visualization')
-plt.scatter(features[:, 0], features[:, 1], c=colors, s=10)
-plt.savefig('sne.jpg', dpi=500)
-plt.show()
+    plt.figure(figsize=(6,6))
+    plt.title('t-SNE Visualization')
+    plt.scatter(features[:, 0], features[:, 1], c=colors, s=10)
+    plt.savefig('sne.jpg', dpi=500)
+    plt.show()
