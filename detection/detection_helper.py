@@ -14,6 +14,7 @@ from torch import optim
 from torchvision import transforms
 from torchvision.utils import make_grid
 from torch.utils.tensorboard import SummaryWriter
+from datetime import datetime
 
 from utils.utils import detection_visualizer
 
@@ -190,7 +191,7 @@ def train_detector(
     """
     Train the detector. We use SGD with momentum and step decay.
     """
-    writer = SummaryWriter("detection_logs")
+    writer = SummaryWriter(f"detection_logs/run_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
     detector.to(device=device)
 
     # Optimizer: use SGD with momentum.
