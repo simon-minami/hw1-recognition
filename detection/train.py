@@ -28,6 +28,7 @@ from detection_helper import train_detector, inference_with_detector
 from detection_helper import VOC2007DetectionTiny
 from one_stage_detector import FCOS
 from utils.utils import detection_visualizer
+from datetime import datetime
 
 if torch.cuda.is_available():
     print("Good to go!")
@@ -101,7 +102,7 @@ def train_model(detector, train_loader, hyperparams, overfit=False):
     return
 
 def visualize_gt(train_dataset, val_dataset):
-    writer = SummaryWriter("detection_logs")
+    writer = SummaryWriter(f"detection_logs/run_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
     inverse_norm = transforms.Compose(
         [
             transforms.Normalize(mean=[0., 0., 0.], std=[1 / 0.229, 1 / 0.224, 1 / 0.225]),
