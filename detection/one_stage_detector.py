@@ -336,6 +336,8 @@ class FCOS(nn.Module):
         Returns:
             Losses during training and predictions during inference.
         """
+        print(f'debug1: {torch.isnan(images).any()}')
+        
 
         ######################################################################
         # TODO: Process the image through backbone, FPN, and prediction head #
@@ -362,6 +364,9 @@ class FCOS(nn.Module):
         # each should be p_name, logits output (b,hw,-1 shape) 
         # so for cls its b,h*w,20
         pred_cls_logits, pred_boxreg_deltas, pred_ctr_logits = self.pred_net(backbone_feats)
+        for name, t in pred_cls_logits.items():
+            print(f'debug: {name, torch.isnan(t).any()}')
+
         # now we have to img locations for each fpn level
         shape_per_fpn_level = {key: value.shape for key, value in backbone_feats.items()}
         # this is just like 'p3', (b,c,h,w) for each p level
@@ -473,10 +478,17 @@ class FCOS(nn.Module):
         gt_classes = matched_gt_boxes[:, :, 4].long()
         # now shape is b,numlocations, each location is class index
         print(f'debug: {torch.unique(gt_classes)}')
-
+        # we should have 21 numbers from -1 to 19
+        # now if we clamp to 0 then do 1 hot, background is treated as class index 0
+        # instead we want all zeros if theres a negative 1
         gt_classes_1hot = F.one_hot(gt_classes.clamp(min=0), num_classes=self.num_classes).float()
-        loss_cls = sigmoid_focal_loss(inputs=pred_cls_logits, targets=gt_classes_1hot)
+        # zero-out background to fix aforementioned problem
+        gt_classes_1hot[gt_classes < 0] = 0.0
+        loss_cls = sigmoid_focal_loss(inputs=pred_cls_logits, targets=gt_classes_1hot, reduction="none")
 
+        # ok matched_gt_deltas should be b,num_locations_across_all_fpn_levels,4
+        # pred should be same shape
+        # zero out the back ground locations that have no associated bbox
         loss_box = 0.25 * F.l1_loss(pred_boxreg_deltas, matched_gt_deltas, reduction="none")
         loss_box[matched_gt_deltas < 0] *= 0.0
 
