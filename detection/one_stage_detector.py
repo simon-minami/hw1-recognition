@@ -603,27 +603,28 @@ class FCOS(nn.Module):
             # Step 1:
             # Replace "pass" statement with your code
             # we need to get the most confidently predicted class and its score
-
-            scores, classes = level_pred_scores.max(dim=1)        # both (H*W,)
+            scores, classes = level_pred_scores.max(dim=1)        
             
             # Step 2:
             # Replace "pass" statement with your code
+            # threshold so that we're only keeping preds over threshold
             keep = scores > test_score_thresh
-            # if keep.sum() == 0:
-            #     continue
 
+            # use the mask to select only the values over threshold
             scores, classes = scores[keep], classes[keep]
             deltas = level_deltas[keep]
             locations = level_locations[keep]
 
             # Step 3:
             # Replace "pass" statement with your code
+            # get predicted boxes from the deltas and locations
             stride = self.backbone.fpn_strides[level_name]
             boxes = fcos_apply_deltas_to_locations(deltas, locations, stride)
             boxes = boxes.clamp(min=0)
 
             # Step 4: Use `images` to get (height, width) for clipping.
             # Replace "pass" statement with your code
+            # do some clippings
             H, W = images.shape[2:]
             boxes[:, [0, 2]] = boxes[:, [0, 2]].clamp_(0, W)
             boxes[:, [1, 3]] = boxes[:, [1, 3]].clamp_(0, H)
