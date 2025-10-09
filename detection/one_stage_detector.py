@@ -358,13 +358,20 @@ class FCOS(nn.Module):
         locations_per_fpn_level = None
 
         backbone_feats = self.backbone(images)  # should be p_name, feature map dict
+
         # each should be p_name, logits output (b,hw,-1 shape) 
+        # so for cls its b,h*w,20
         pred_cls_logits, pred_boxreg_deltas, pred_ctr_logits = self.pred_net(backbone_feats)
         # now we have to img locations for each fpn level
         shape_per_fpn_level = {key: value.shape for key, value in backbone_feats.items()}
-        strides_per_fpn_level = self.backbone.fpn_strides
+        # this is just like 'p3', (b,c,h,w) for each p level
+
+        strides_per_fpn_level = self.backbone.fpn_strides # this i just p3, 8 p4, 16 etc
+        
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         locations_per_fpn_level = get_fpn_location_coords(shape_per_fpn_level, strides_per_fpn_level, device=device)
+        # p level, locations dictionary
+        # p3, h*w,2 where h*w,2 is x,y center of receptive in original img corresponding to each fpn location
 
 
         ######################################################################
@@ -390,23 +397,36 @@ class FCOS(nn.Module):
         ######################################################################
         # List of dictionaries with keys {"p3", "p4", "p5"} giving matched
         # boxes for locations per FPN level, per image. Fill this list:
-        # gt boxes is (B, N, 5)
+        # gt boxes is (B, N, 5) in the form x1,y1,x2,y2,class
+        # each we need to match those gtboxes in each feature pyramid space (remember in fcos every feature map level is needs corresponding gt) 
+        # remember each p3, p4, p5 have differnent h,w than original img because of downsampling etc
+
+        # so what is matched gt boxes
+        # list of dictionaries
+        # we have original gtboxes b,n,5, where each batch of gtboxes corresponds to b,3,h,w img
+        # we need corresponding n,5 in each fp level in each img
         matched_gt_boxes = []
         for gtboxes_1batch in gt_boxes:
+            # input single n,5 batch of gtboxes (original img space)
+            # locations per fpn level is p3, h*w,2 where h*w,2 is x,y center of receptive in original img corresponding to each fpn location
+
+            # output gives you a p3: n,5 p4: n,5 etc for a single img where n = h,w remember need gtbox for every pixel!
             matched = fcos_match_locations_to_gt(locations_per_fpn_level, strides_per_fpn_level, gtboxes_1batch)
             matched_gt_boxes.append(matched)
         
 
         # Calculate GT deltas for these matched boxes. Similar structure
         # as `matched_gt_boxes` above. Fill this list:
+
+        # same idea
+        # we have gt boxes which is the gt boxes for the b images in this batch
+        # list of dicts of len b, each dict is p3:n,5 ... p5:n,5
+        # so for each pixel in each fp we need corresponding deltas (l,t,r,b)
+        # does each box need a corresponding delta? no each 
         matched_gt_deltas = []
-        # Replace "pass" statement with your code
-        # we have matched_gt_boxes
-        # list of dict, each dict is 1 image, and has gtboxes corresponding to each location in p3, p4, p5 for that image
-        for i, gtboxes_1batch in enumerate(gt_boxes):
-            matched = matched_gt_boxes[i]
+        for matched_per_img in matched_gt_boxes:  # one dict per image
             deltas_per_img = {}
-            for p_level, matched_boxes in matched.items():
+            for p_level, matched_boxes in matched_per_img.items():
                 stride = strides_per_fpn_level[p_level]
                 deltas_per_img[p_level] = fcos_get_deltas_from_locations(
                     locations_per_fpn_level[p_level],
@@ -414,7 +434,8 @@ class FCOS(nn.Module):
                     stride
                 )
             matched_gt_deltas.append(deltas_per_img)
-        
+    
+
         ######################################################################
         #                           END OF YOUR CODE                         #
         ######################################################################
@@ -447,8 +468,12 @@ class FCOS(nn.Module):
 
         loss_cls, loss_box, loss_ctr = None, None, None
 
-        # get gt classes, need to be 1 hot in b,l,num classes
+        # get gt classes, need to be 1 hot in b,num_locations_across_all_fpn_levels,5
+        # class index is 4 index of gtbbox
         gt_classes = matched_gt_boxes[:, :, 4].long()
+        # now shape is b,numlocations, each location is class index
+        print(f'debug: {torch.unique(gt_classes)}')
+
         gt_classes_1hot = F.one_hot(gt_classes.clamp(min=0), num_classes=self.num_classes).float()
         loss_cls = sigmoid_focal_loss(inputs=pred_cls_logits, targets=gt_classes_1hot)
 
