@@ -477,7 +477,7 @@ class FCOS(nn.Module):
         # class index is 4 index of gtbbox
         gt_classes = matched_gt_boxes[:, :, 4].long()
         # now shape is b,numlocations, each location is class index
-        print(f'debug: {torch.unique(gt_classes)}')
+        # print(f'debug: {torch.unique(gt_classes)}')
         # we should have 21 numbers from -1 to 19
         # now if we clamp to 0 then do 1 hot, background is treated as class index 0
         # instead we want all zeros if theres a negative 1
