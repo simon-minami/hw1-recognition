@@ -234,6 +234,12 @@ def train_detector(
         lr_scheduler.step()
         for key, value in losses.items():
             writer.add_scalar("train/" + key + "_{}".format("overfit" if overfit else "full"), value, _iter)
+        writer.add_scalar(
+            "train/total_loss_{}".format("overfit" if overfit else "full"),
+            total_loss,
+            _iter,
+        )
+
         # Print losses periodically.
         if _iter % log_period == 0:
             loss_str = f"[Iter {_iter}][loss: {total_loss:.3f}]"

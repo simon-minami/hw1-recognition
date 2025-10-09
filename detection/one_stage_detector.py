@@ -482,7 +482,7 @@ class FCOS(nn.Module):
         # now if we clamp to 0 then do 1 hot, background is treated as class index 0
         # instead we want all zeros if theres a negative 1
         gt_classes_1hot = F.one_hot(gt_classes.clamp(min=0), num_classes=self.num_classes).float()
-        # zero-out background to fix aforementioned problem
+        # make sure background gt is all zeros to fix aforementioned problem
         gt_classes_1hot[gt_classes < 0] = 0.0
         loss_cls = sigmoid_focal_loss(inputs=pred_cls_logits, targets=gt_classes_1hot, reduction="none")
 
@@ -495,6 +495,8 @@ class FCOS(nn.Module):
         # need to get gt centerness
         # matched gt deltas is b,l,4
         gt_centerness = fcos_make_centerness_targets(matched_gt_deltas.view(-1, 4))
+        # gt_centerness should be shape N,
+        # reshape back into b,l,1
         gt_centerness = gt_centerness.view(pred_ctr_logits.shape)  # (B, L, 1)
         loss_ctr = F.binary_cross_entropy_with_logits(pred_ctr_logits, gt_centerness, reduction="none")
         loss_ctr[gt_centerness < 0] *= 0.0
@@ -583,6 +585,9 @@ class FCOS(nn.Module):
             #      and width of input image.
             ##################################################################
             # Feel free to delete this line: (but keep variable names same)
+            # ok so we're iterating through each level
+            # level_cls_logits should be N,20 (where N is h*w)
+
             level_pred_boxes, level_pred_classes, level_pred_scores = (
                 None,
                 None,
@@ -591,23 +596,38 @@ class FCOS(nn.Module):
 
             # Compute geometric mean of class logits and centerness:
             level_pred_scores = torch.sqrt(
-                level_cls_logits.sigmoid_() * level_ctr_logits.sigmoid_()
+                level_cls_logits.sigmoid() * level_ctr_logits.sigmoid()
             )
             # Step 1:
             # Replace "pass" statement with your code
-            pass
+            # we need to get the most confidently predicted class and its score
+            scores, classes = level_pred_scores.max(dim=1)        # both (H*W,)
             
             # Step 2:
             # Replace "pass" statement with your code
-            pass
+            keep = scores > test_score_thresh
+            if keep.sum() == 0:
+                continue
+
+            scores, classes = scores[keep], classes[keep]
+            deltas = level_deltas[keep]
+            locations = level_locations[keep]
 
             # Step 3:
             # Replace "pass" statement with your code
-            pass
+            stride = self.backbone.fpn_strides[level_name]
+            boxes = fcos_apply_deltas_to_locations(deltas, locations, stride)
+            boxes = boxes.clamp(min=0)
 
             # Step 4: Use `images` to get (height, width) for clipping.
             # Replace "pass" statement with your code
-            pass
+            H, W = images.shape[2:]
+            boxes[:, [0, 2]] = boxes[:, [0, 2]].clamp_(0, W)
+            boxes[:, [1, 3]] = boxes[:, [1, 3]].clamp_(0, H)
+
+            level_pred_boxes = boxes
+            level_pred_classes = classes
+            level_pred_scores = scores
 
             ##################################################################
             #                          END OF YOUR CODE                      #
