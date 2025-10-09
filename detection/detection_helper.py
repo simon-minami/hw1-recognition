@@ -360,7 +360,7 @@ def inference_with_detector(
         grid = torch.stack([img.clone().detach().float() for img in all_images])
         grid = (grid - grid.min()) / (grid.max() - grid.min() + 1e-8)
         grid = grid.clamp(0, 1)
-        vutils.save_image(grid, "test_images.png", nrow=8)
+        vutils.save_image(grid, "test_images.png", nrow=4)
         writer.add_image("test_images", image_grid)
         writer.close()
     end_t = time.time()
