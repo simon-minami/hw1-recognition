@@ -27,8 +27,12 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import argparse
 if __name__ == '__main__':
+    class_names = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
+               'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
+               'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str)
     args = parser.parse_args()
@@ -48,6 +52,11 @@ if __name__ == '__main__':
     features = []
     colors = []
     class_colors = plt.cm.tab20(np.linspace(0, 1, 20))[:, :3]  # shape (20,3), RGB only
+
+    legend_handles = [
+        mpatches.Patch(color=class_colors[i], label=cls)
+        for i, cls in enumerate(class_names)
+    ]
 
     # process 1000 images
     with torch.inference_mode():
@@ -78,9 +87,10 @@ if __name__ == '__main__':
     features = pca.fit_transform(features)  #output should be 1000,50 now
     features = tsne.fit_transform(features)  #output should be 1000,2
 
-
+#TODO ADD LEGEND
     plt.figure(figsize=(6,6))
     plt.title('t-SNE Visualization')
     plt.scatter(features[:, 0], features[:, 1], c=colors, s=10)
+    plt.legend(handles=legend_handles, bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.savefig('sne.jpg', dpi=500)
     plt.show()
