@@ -595,19 +595,22 @@ class FCOS(nn.Module):
             )
 
             # Compute geometric mean of class logits and centerness:
+            # cls_logits should be (H*W, num_classes)
+            # ctr logits should be (H*W, 1)
             level_pred_scores = torch.sqrt(
                 level_cls_logits.sigmoid() * level_ctr_logits.sigmoid()
             )
             # Step 1:
             # Replace "pass" statement with your code
             # we need to get the most confidently predicted class and its score
+
             scores, classes = level_pred_scores.max(dim=1)        # both (H*W,)
             
             # Step 2:
             # Replace "pass" statement with your code
             keep = scores > test_score_thresh
-            if keep.sum() == 0:
-                continue
+            # if keep.sum() == 0:
+            #     continue
 
             scores, classes = scores[keep], classes[keep]
             deltas = level_deltas[keep]
