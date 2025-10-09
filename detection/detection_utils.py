@@ -140,7 +140,23 @@ def fcos_get_deltas_from_locations(
     # Set this to Tensor of shape (N, 4) giving deltas (left, top, right, bottom)
     # from the locations to GT box edges, normalized by FPN stride.
     deltas = None
-    pass
+    # TODO: do i need to check if deltas are positive?
+    # locations is N,2 for feature locations
+    # gt_boxes is N,4, for x1,y1, x2,y2
+    # need to return deltas l,t,r,b
+    # xc-x1, yc-y1, x2-xc, y2-yc
+    xc, yc = [locations[:, i] for i in range(2)]
+    x1, y1, x2, y2 = [gt_boxes[:, i] for i in range(4)]
+    deltas = -1*torch.ones_like(gt_boxes[:, :4])  # initialize deltas
+    valid = (gt_boxes[:, :4] != -1).any(dim=1)
+
+    # valid = (x1 != -1) | (x2 != -1) | (y1 != -1) | (y2 != -1)  # if one of these not equal to -1 then we know its valid (not background)
+    deltas[valid, 0] = xc[valid] - x1[valid]
+    deltas[valid, 1] = yc[valid] - y1[valid]
+    deltas[valid, 2] = x2[valid] - xc[valid]
+    deltas[valid, 3] = y2[valid] - yc[valid]
+    deltas[valid] /= stride
+
     ##########################################################################
     #                             END OF YOUR CODE                           #
     ##########################################################################
@@ -182,6 +198,15 @@ def fcos_apply_deltas_to_locations(
     # box. Make sure to clip them to zero.                                   #
     ##########################################################################
     output_boxes = None
+    # first clip predicted deltas so they are >=0
+    deltas = torch.where(deltas>=0, deltas, 0)
+    # unnormalize deltas
+    deltas *= stride
+    
+    l, t, r, b = [deltas[:, i] for i in range(4)]
+    xc, yc = [locations[:, i] for i in range(2)]
+    # output boxes should be x1,y1, x2, y2
+    output_boxes = torch.stack((xc - l, yc - t, xc + r, yc + b), dim=1)
 
     ##########################################################################
     #                             END OF YOUR CODE                           #
@@ -216,6 +241,16 @@ def fcos_make_centerness_targets(deltas: torch.Tensor):
     # )
     ##########################################################################
     centerness = None
+    # have N,4 for deltas
+    # need to output centerness for each row
+    # if deltas back ground (all -1) then centerness is -1
+    valid = (deltas != -1).any(dim=1)  # mask, true for non-background
+    # initialize centerness to all -1
+    centerness = -1 * torch.ones_like(deltas[:, 0])
+    l, t, r, b = [deltas[:, i][valid] for i in range(4)]
+    centerness_all = torch.sqrt((torch.minimum(l, r) * torch.minimum(t, b)) / (torch.maximum(l, r) * torch.maximum(t, b)))
+    centerness[valid] = centerness_all
+
     ##########################################################################
     #                             END OF YOUR CODE                           #
     ##########################################################################
@@ -252,13 +287,32 @@ def get_fpn_location_coords(
     location_coords = {
         level_name: None for level_name, _ in shape_per_fpn_level.items()
     }
-
+    # print(f'debug: {location_coords}')
     for level_name, feat_shape in shape_per_fpn_level.items():
         level_stride = strides_per_fpn_level[level_name]
         ##################################################################–####
         # TODO: Implement logic to get location co-ordinates below.          #
         ######################################################################
-        pass
+        
+        # x_img = x_fpn*s + s/2
+        #feat shape is b,c,h,w
+        ys = torch.arange(feat_shape[-2])
+        xs = torch.arange(feat_shape[-1])
+
+        #yy is row index, xx is col index
+        yy, xx = torch.meshgrid(ys, xs, indexing='ij')
+
+        xx  = xx*level_stride + level_stride/2
+        xx = xx.to(dtype)  # make sure its int
+        yy  = yy*level_stride + level_stride/2
+        yy = yy.to(dtype)  # make sure its int
+
+        # coords in x,y format
+        coords = torch.stack((xx,yy), dim=-1)  # shape (H, W, 2)
+        coords = coords.view(-1, 2).to(device)
+        
+        location_coords[level_name] = coords
+        
         ######################################################################
         #                             END OF YOUR CODE                       #
         ######################################################################
