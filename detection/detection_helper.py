@@ -356,7 +356,10 @@ def inference_with_detector(
         writer=SummaryWriter("detection_logs")
         image_grid = make_grid(all_images, nrow=8)
         import torchvision.utils as vutils
-        vutils.save_image(all_images, "test_images.png", nrow=8)
+        # ensure tensor values are within [0,1]
+        grid = all_images.clone().detach()
+        grid = grid.clamp(0, 1)
+        vutils.save_image(grid, "test_images.png", nrow=8)
         writer.add_image("test_images", image_grid)
         writer.close()
     end_t = time.time()
