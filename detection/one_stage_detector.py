@@ -336,7 +336,7 @@ class FCOS(nn.Module):
         Returns:
             Losses during training and predictions during inference.
         """
-        print(f'debug1: {torch.isnan(images).any()}')
+        # print(f'debug1: {torch.isnan(images).any()}')
         
 
         ######################################################################
@@ -364,8 +364,8 @@ class FCOS(nn.Module):
         # each should be p_name, logits output (b,hw,-1 shape) 
         # so for cls its b,h*w,20
         pred_cls_logits, pred_boxreg_deltas, pred_ctr_logits = self.pred_net(backbone_feats)
-        for name, t in pred_cls_logits.items():
-            print(f'debug: {name, torch.isnan(t).any()}')
+        # for name, t in pred_cls_logits.items():
+        #     print(f'debug2: {name, torch.isnan(t).any()}')
 
         # now we have to img locations for each fpn level
         shape_per_fpn_level = {key: value.shape for key, value in backbone_feats.items()}
