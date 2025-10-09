@@ -92,5 +92,6 @@ if __name__ == '__main__':
     plt.title('t-SNE Visualization')
     plt.scatter(features[:, 0], features[:, 1], c=colors, s=10)
     plt.legend(handles=legend_handles, bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.savefig('sne.jpg', dpi=500)
+    plt.savefig('sne.jpg', dpi=500, bbox_inches='tight')
+    # plt.savefig('sne.jpg', dpi=500)
     plt.show()
